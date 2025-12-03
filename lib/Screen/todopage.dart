@@ -1,82 +1,65 @@
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tasks/Services/api_client.dart';
+import 'package:tasks/bloc/todo_bloc.dart';
+import 'package:tasks/bloc/todo_events.dart';
+import 'package:tasks/bloc/todo_state.dart';
 import 'package:tasks/models/todoModels.dart';
 
-class TodoPage extends StatefulWidget {
-  @override
-  State<TodoPage> createState() => _TodoPageState();
-}
-
-class _TodoPageState extends State<TodoPage> {
-  bool isLoading = true;
-  bool isError = false;
-  List<Todomodels> todos = [];
-
-  @override
-  void initState() {
-    super.initState();
-    fetchTodos();
-  }
-
-  Future<void> fetchTodos() async {
-    setState(() {
-      isLoading = true;
-      isError = false;
-    });
-
-    try {
-      final api = ApiClient().dio;
-      final response = await api.get("/todos");
-
-      final result = response.data as List;
-
-      setState(() {
-        todos = result.map((e) => Todomodels.fromJson(e)).toList();
-        isLoading = false;
-      });
-    } on DioException catch (_) {
-      setState(() {
-        isError = true;
-        isLoading = false;
-      });
-    }
-  }
-
+class Todopage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.blue,
-        title: Text(
-          "TRACK YOUR SCHEDULE",
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+    return BlocProvider(
+      create: (_) => TodoBloc()..add(FetchTodos()),
+      child: Scaffold(
+        appBar: AppBar(
+          backgroundColor: Colors.blue,
+          title: Text(
+            "TRACK YOUR SCHEDULES",
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          centerTitle: true,
         ),
-        centerTitle: true,
+        body: BlocBuilder<TodoBloc, TodoState>(
+          builder: (context, state) {
+            if (state is TodoLoading) {
+              return Center(child: CircularProgressIndicator());
+            }
+            if (state is TodoFailure) {
+              return Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(state.message),
+                    SizedBox(height: 10),
+                    ElevatedButton(
+                      onPressed: () {
+                        context.read<TodoBloc>().add(FetchTodos());
+                      },
+                      child: Text("Retry"),
+                    ),
+                  ],
+                ),
+              );
+            }
+
+            if (state is TodoLoaded) {
+              return ListView.builder(
+                itemCount: state.todos.length,
+                itemBuilder: (context, index) {
+                  final todo = state.todos[index];
+                  return ListTile(
+                    title: Text(todo.title),
+                    leading: Checkbox(value: todo.isCompleted, onChanged: null),
+                  );
+                },
+              );
+            }
+            return SizedBox();
+          },
+        ),
       ),
-      body: isLoading
-          ? Center(child: CircularProgressIndicator())
-          : isError
-          ? Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text("Failed to Load Todos"),
-                  SizedBox(height: 10),
-                  ElevatedButton(onPressed: fetchTodos, child: Text("Retry")),
-                ],
-              ),
-            )
-          : ListView.builder(
-              itemCount: todos.length,
-              itemBuilder: (context, index) {
-                final todo = todos[index];
-                return ListTile(
-                  title: Text(todo.title),
-                  leading: Checkbox(value: todo.isCompleted, onChanged: null),
-                );
-              },
-            ),
     );
   }
 }

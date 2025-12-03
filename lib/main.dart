@@ -10,6 +10,6 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(debugShowCheckedModeBanner: false, home: TodoPage());
+    return MaterialApp(debugShowCheckedModeBanner: false, home: Todopage());
   }
 }
