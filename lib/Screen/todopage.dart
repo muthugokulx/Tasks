@@ -50,14 +50,33 @@ class Todopage extends StatelessWidget {
                 itemBuilder: (context, index) {
                   final todo = state.todos[index];
                   return ListTile(
-                    title: Text(todo.title),
-                    leading: Checkbox(value: todo.isCompleted, onChanged: null),
+                    title: Text(
+                      todo.title,
+                      style: TextStyle(
+                        decoration: todo.isCompleted
+                            ? TextDecoration.lineThrough
+                            : null,
+                      ),
+                    ),
+                    leading: Checkbox(
+                      value: todo.isCompleted,
+                      onChanged: (_) {
+                        context.read<TodoBloc>().add(ToggleTodoStatus(index));
+                      },
+                    ),
                   );
                 },
               );
             }
             return SizedBox();
           },
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            _showAddTodoButtomSheet(context);
+          },
+          backgroundColor: Colors.blue,
+          child: const Icon(Icons.add),
         ),
       ),
     );
