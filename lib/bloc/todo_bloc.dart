@@ -8,6 +8,7 @@ import 'todo_state.dart';
 class TodoBloc extends Bloc<TodoEvent, TodoState> {
   TodoBloc() : super(TodoInitial()) {
     on<FetchTodos>(_onFetchTodos);
+    on<ToggleTodoStatus>(_onToggleTodo);
   }
 
   Future<void> _onFetchTodos(FetchTodos event, Emitter<TodoState> emit) async {
@@ -21,6 +22,24 @@ class TodoBloc extends Bloc<TodoEvent, TodoState> {
       emit(TodoLoaded(result.map((e) => Todomodels.fromJson(e)).toList()));
     } on DioException catch (_) {
       emit(TodoFailure("Failed to load Data"));
+    }
+  }
+
+  void _onToggleTodo(ToggleTodoStatus event, Emitter<TodoState> emit) {
+    if (state is TodoLoaded) {
+      final currentState = state as TodoLoaded;
+
+      final updatedTodos = List<Todomodels>.from(currentState.todos);
+
+      final currentTodos = updatedTodos[event.index];
+
+      updatedTodos[event.index] = Todomodels(
+        userId: currentTodos.userId,
+        id: currentTodos.id,
+        title: currentTodos.title,
+        isCompleted: !currentTodos.isCompleted,
+      );
+      emit(TodoLoaded(updatedTodos));
     }
   }
 }
