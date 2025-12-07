@@ -7,3 +7,12 @@ class ToggleTodoStatus extends TodoEvent {
 
   ToggleTodoStatus(this.index);
 }
+
+class AddTodo extends TodoEvent {
+  final String title;
+
+  AddTodo(this.title);
+
+  @override
+  List<Object?> get props => [title];
+}

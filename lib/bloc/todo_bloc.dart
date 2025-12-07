@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dio/dio.dart';
 import 'package:tasks/Services/api_client.dart';
@@ -9,6 +10,7 @@ class TodoBloc extends Bloc<TodoEvent, TodoState> {
   TodoBloc() : super(TodoInitial()) {
     on<FetchTodos>(_onFetchTodos);
     on<ToggleTodoStatus>(_onToggleTodo);
+    on<AddTodo>(_onAddTodo);
   }
 
   Future<void> _onFetchTodos(FetchTodos event, Emitter<TodoState> emit) async {
@@ -41,5 +43,14 @@ class TodoBloc extends Bloc<TodoEvent, TodoState> {
       );
       emit(TodoLoaded(updatedTodos));
     }
+  }
+
+  void _onAddTodo(event, emit) {
+    final currentState = state as TodoLoaded;
+    final updatedTodos = List<Todomodels>.from(currentState.todos)
+      ..add(
+        Todomodels(userId: 1, id: 1, title: event.title, isCompleted: false),
+      );
+    emit(TodoLoaded(updatedTodos));
   }
 }
