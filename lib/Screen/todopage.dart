@@ -73,7 +73,7 @@ class Todopage extends StatelessWidget {
         ),
         floatingActionButton: FloatingActionButton(
           onPressed: () {
-            _showAddTodoButtomSheet(context);
+            _showAddTodoBottomSheet(context);
           },
           backgroundColor: Colors.blue,
           child: const Icon(Icons.add),
@@ -81,4 +81,63 @@ class Todopage extends StatelessWidget {
       ),
     );
   }
+}
+
+void _showAddTodoBottomSheet(BuildContext parentContext) {
+  final TextEditingController controller = TextEditingController();
+
+  showModalBottomSheet(
+    context: parentContext,
+    isScrollControlled: true,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadiusGeometry.vertical(top: Radius.circular(16)),
+    ),
+    builder: (context) {
+      return Padding(
+        padding: EdgeInsets.only(
+          top: 16,
+          right: 16,
+          left: 16,
+          bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const Text(
+              "Add Todo",
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: controller,
+              decoration: const InputDecoration(
+                labelText: "Add Todo",
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 12),
+
+            ElevatedButton(
+              onPressed: () {
+                final text = controller.text.trim();
+
+                if (text.isEmpty) {
+                  ScaffoldMessenger.of(parentContext).showSnackBar(
+                    const SnackBar(content: Text("Todo Cannot be Empty")),
+                  );
+                  return;
+                }
+
+                //Sending Values to Bloc
+                parentContext.read<TodoBloc>().add(AddTodo(text));
+                Navigator.pop(parentContext);
+              },
+              child: const Text("Add"),
+            ),
+          ],
+        ),
+      );
+    },
+  );
 }
